@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демонстрация Блокнота</title>
+    <style>
+        /* === БАЗОВЫЕ СТИЛИ === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* === СТИЛИ ДЛЯ БЛОКНОТА === */
+        .notebook-container {
+            display: flex;
+            height: 70vh;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-container {
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .note-item {
+            padding: 15px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .note-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .note-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .note-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+            word-wrap: break-word;
+        }
+
+        .note-preview {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.4;
+            word-wrap: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-height: 2.8em;
+        }
+
+        .note-date {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .note-item.active .note-date {
+            opacity: 0.9;
+        }
+
+        .add-note-btn {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s;
+            z-index: 10;
+        }
+
+        .add-note-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-header {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title {
+            font-size: 1.5em;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .save-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        .new-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .new-btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .title-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-bottom: 1px solid #e9ecef;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+
+        .title-input:focus {
+            outline: none;
+            background: white;
+            border-bottom-color: #667eea;
+        }
+
+        .content-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            font-size: 16px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            resize: none;
+            background: white;
+            overflow-y: auto;
+        }
+
+        .content-textarea:focus {
+            outline: none;
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* === АДАПТИВНЫЙ ДИЗАЙН === */
+        @media (max-width: 768px) {
+            .notebook-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 200px;
+            }
+
+            .add-note-btn {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .notes-list {
+                padding: 5px;
+            }
+
+            .note-item {
+                padding: 10px;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="notebook-container">
+        <!-- Левое меню со списком записей -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>📝 Мой блокнот</h2>
+            </div>
+            
+            <!-- Поисковая строка -->
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Поиск по записям...">
+            </div>
+            
+            <!-- Список записей -->
+            <div class="notes-list" id="notesList">
+                <div style="padding: 20px; text-align: center; color: #6666;" id="emptyNotes">
+                    Записей пока нет
+                </div>
+                <!-- Записи будут добавляться сюда динамически -->
+            </div>
+            
+            <!-- Кнопка создания новой записи -->
+            <button class="add-note-btn" onclick="createNewNote()" title="Создать новую запись">+</button>
+        </div>
+        
+        <!-- Основная область редактирования -->
+        <div class="main-content">
+            <!-- Заголовок редактора с действиями -->
+            <div class="editor-header">
+                <div class="editor-title">
+                    <span id="editorTitle">Редактор записей</span>
+                </div>
+                <div class="editor-actions">
+                    <button class="action-btn new-btn" onclick="createNewNote()">📄 Новая</button>
+                    <button class="action-btn save-btn" onclick="saveCurrentNote()">💾 Сохранить</button>
+                    <button class="action-btn delete-btn" onclick="deleteCurrentNote()">🗑️ Удалить</button>
+                </div>
+            </div>
+            
+            <!-- Поле ввода заголовка -->
+            <input type="text" class="title-input" id="noteTitle" placeholder="Введите заголовок записи...">
+            
+            <!-- Поле для текста записи -->
+            <textarea class="content-textarea" id="noteContent" placeholder="Начните писать вашу запись..."></textarea>
+            
+            <!-- Состояние пустого блокнота -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <div class="empty-state-icon">📖</div>
+                <h3>Ваш блокнот пуст</h3>
+                <p>Создайте первую запись, чтобы начать работу с блокнотом</p>
+                <button class="action-btn new-btn" onclick="createNewNote()">Создать запись</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let notes = [];
+        let nextId = 1;
+        let currentNoteId = null;
+        
+        // Форматирование даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now.getTime() - date.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 24));
+            
+            if (diffDays === 1) {
+                return 'Сегодня';
+            } else if (diffDays === 2) {
+                return 'Вчера';
+            } else if (diffDays <= 7) {
+                return `${diffDays - 1} дн. назад`;
+            } else {
+                return date.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                });
+            }
+        }
+        
+        // Обновление списка заметок
+        function updateNotesList() {
+            const notesList = document.getElementById('notesList');
+            const emptyNotes = document.getElementById('emptyNotes');
+            const searchInput = document.getElementById('searchInput');
+            const searchTerm = searchInput.value.toLowerCase();
+            
+            // Фильтрация заметок
+            const filteredNotes = notes.filter(note => 
+                note.title.toLowerCase().includes(searchTerm) ||
+                note.content.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredNotes.length > 0) {
+                emptyNotes.style.display = 'none';
+                notesList.innerHTML = '';
+                
+                filteredNotes.forEach(note => {
+                    const noteElement = document.createElement('div');
+                    noteElement.className = `note-item ${currentNoteId === note.id ? 'active' : ''}`;
+                    noteElement.onclick = () => loadNoteToEditor(note.id);
+                    
+                    noteElement.innerHTML = `
+                        <div class="note-title">${note.title}</div>
+                        <div class="note-preview">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</div>
+                        <div class="note-date">${formatDate(note.updatedAt)}</div>
+                    `;
+                    
+                    notesList.appendChild(noteElement);
+                });
+            } else {
+                notesList.innerHTML = '';
+                emptyNotes.style.display = 'block';
+                emptyNotes.textContent = searchTerm ? 'Ничего не найдено' : 'Записей пока нет';
+                notesList.appendChild(emptyNotes);
+            }
+        }
+        
+        // Загрузка заметки в редактор
+        function loadNoteToEditor(id) {
+            const note = notes.find(note => note.id === id);
+            if (note) {
+                currentNoteId = id;
+                document.getElementById('noteTitle').value = note.title;
+                document.getElementById('noteContent').value = note.content;
+                document.getElementById('editorTitle').textContent = note.title;
+                updateNotesList();
+            }
+        }
+        
+        // Создание новой заметки
+        function createNewNote() {
+            const newNote = {
+                id: nextId++,
+                title: 'Новая запись',
+                content: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            notes.unshift(newNote);
+            currentNoteId = newNote.id;
+            document.getElementById('noteTitle').value = newNote.title;
+            document.getElementById('noteContent').value = newNote.content;
+            document.getElementById('editorTitle').textContent = newNote.title;
+            
+            updateNotesList();
+            document.getElementById('noteTitle').focus();
+        }
+        
+        // Сохранение текущей заметки
+        function saveCurrentNote() {
+            if (currentNoteId === null) {
+                alert('Нет активной записи для сохранения!');
+                return;
+            }
+            
+            const title = document.getElementById('noteTitle').value.trim();
+            if (!title) {
+                alert('Заголовок не может быть пустым!');
+                return;
+            }
+            
+            const content = document.getElementById('noteContent').value;
+            
+            const noteIndex = notes.findIndex(note => note.id === currentNoteId);
+            if (noteIndex !== -1) {
+                notes[noteIndex].title = title;
+                notes[noteIndex].content = content;
+                notes[noteIndex].updatedAt = new Date().toISOString();
+                
+                document.getElementById('editorTitle').textContent = title;
+            }
+            
+            updateNotesList();
+        }
+        
+        // Удаление текущей заметки
+        function deleteCurrentNote() {
+            if (currentNoteId === null) {
+                alert('Нет активной записи для удаления!');
+                return;
+            }
+            
+            const note = notes.find(note => note.id === currentNoteId);
+            if (note && confirm(`Вы уверены, что хотите удалить запись "${note.title}"?`)) {
+                notes = notes.filter(note => note.id !== currentNoteId);
+                currentNoteId = null;
+                document.getElementById('noteTitle').value = '';
+                document.getElementById('noteContent').value = '';
+                document.getElementById('editorTitle').textContent = 'Редактор записей';
+                
+                // Показать пустое состояние, если нет заметок
+                if (notes.length === 0) {
+                    document.getElementById('emptyState').style.display = 'flex';
+                }
+                
+                updateNotesList();
+            }
+        }
+        
+        // Поиск заметок
+        document.getElementById('searchInput').addEventListener('input', updateNotesList);
+        
+        // Инициализация
+        document.getElementById('emptyState').style.display = notes.length === 0 ? 'flex' : 'none';
+        updateNotesList();
+    </script>
+</body>
+</html>

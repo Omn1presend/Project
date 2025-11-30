@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демонстрация Чеклиста</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0.1);
+            padding: 30px;
+        }
+        
+        .container h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .add-task {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .add-task input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .add-task input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .add-task button {
+            padding: 15px 25px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        
+        .add-task button:hover {
+            background: #5a6fd8;
+        }
+        
+        .task-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .task-stats span {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .task-list {
+            list-style: none;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .task-item.completed {
+            opacity: 0.7;
+        }
+        
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+        
+        .task-checkbox {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        
+        .task-text {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .task-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state p {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Мой чеклист</h1>
+        
+        <div class="add-task">
+            <input type="text" id="taskInput" placeholder="Добавьте новое дело...">
+            <button onclick="addTask()">Добавить</button>
+        </div>
+        
+        <div class="task-stats">
+            <span>Всего дел: <span id="totalCount">0</span></span>
+            <span>Выполнено: <span id="completedCount">0</span></span>
+        </div>
+        
+        <ul id="taskList" class="task-list">
+            <!-- Задачи будут добавляться сюда динамически -->
+        </ul>
+        
+        <div id="emptyState" class="empty-state">
+            <p>🎯 Пока нет дел. Добавьте первое дело!</p>
+        </div>
+    </div>
+
+    <script>
+        let tasks = [];
+        let nextId = 1;
+        
+        // Обновление статистики
+        function updateStats() {
+            document.getElementById('totalCount').textContent = tasks.length;
+            const completedCount = tasks.filter(task => task.completed).length;
+            document.getElementById('completedCount').textContent = completedCount;
+            
+            // Показать/скрыть сообщение о пустом списке
+            const emptyState = document.getElementById('emptyState');
+            if (tasks.length === 0) {
+                emptyState.style.display = 'block';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+        
+        // Добавление задачи
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                alert('Пожалуйста, введите текст дела!');
+                return;
+            }
+            
+            const newTask = {
+                id: nextId++,
+                text: text,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+            
+            tasks.push(newTask);
+            renderTasks();
+            input.value = '';
+            updateStats();
+        }
+        
+        // Переключение статуса задачи
+        function toggleTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    return {
+                        ...task,
+                        completed: !task.completed
+                    };
+                }
+                return task;
+            });
+            renderTasks();
+            updateStats();
+        }
+        
+        // Удаление задачи
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            renderTasks();
+            updateStats();
+        }
+        
+        // Рендер задач
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = `task-item ${task.completed ? 'completed' : ''}`;
+                
+                li.innerHTML = `
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} 
+                        onchange="toggleTask(${task.id})">
+                    <span class="task-text">${task.text}</span>
+                    <div class="task-actions">
+                        <button class="task-btn delete-btn" onclick="deleteTask(${task.id})">Удалить</button>
+                    </div>
+                `;
+                
+                taskList.appendChild(li);
+            });
+        }
+        
+        // Добавить обработчик нажатия Enter в поле ввода
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+        
+        // Инициализация
+        updateStats();
+    </script>
+</body>
+</html>
