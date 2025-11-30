@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Демонстрация Блокнота</title>
+    <title>Блокнот - Приложение для заметок</title>
     <style>
         /* === БАЗОВЫЕ СТИЛИ === */
         * {
@@ -16,21 +16,20 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #333;
         }
 
-        /* === СТИЛИ ДЛЯ БЛОКНОТА === */
+        /* === ОСНОВНОЙ КОНТЕЙНЕР === */
         .notebook-container {
             display: flex;
-            height: 70vh;
-            max-width: 1200px;
+            height: 100vh;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            border-radius: 15px;
-            overflow: hidden;
         }
 
+        /* === ЛЕВОЕ МЕНЮ === */
         .sidebar {
             width: 350px;
             background: #f8f9fa;
@@ -40,6 +39,7 @@
             overflow: hidden;
         }
 
+        /* === ЗАГОЛОВОК САЙДБАРА === */
         .sidebar-header {
             padding: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -54,6 +54,7 @@
             gap: 10px;
         }
 
+        /* === ПОИСК === */
         .search-container {
             padding: 20px;
             border-bottom: 1px solid #e9ecef;
@@ -72,9 +73,10 @@
         .search-input:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 3px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        /* === СПИСОК ЗАПИСЕЙ === */
         .notes-list {
             flex: 1;
             overflow-y: auto;
@@ -117,12 +119,15 @@
             opacity: 0.8;
             line-height: 1.4;
             word-wrap: break-word;
+            /* Стандартное свойство line-clamp для современных браузеров */
             display: -webkit-box;
             -webkit-line-clamp: 2;
-            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            max-height: 2.8em;
+            /* Стандартное свойство line-clamp (поддержка в современных браузерах) */
+            line-clamp: 2;
+            /* Fallback для старых браузеров без поддержки line-clamp */
+            max-height: 2.8em; /* line-height (1.4) * количество строк (2) */
         }
 
         .note-date {
@@ -135,6 +140,7 @@
             opacity: 0.9;
         }
 
+        /* === КНОПКА СОЗДАНИЯ ЗАПИСИ === */
         .add-note-btn {
             position: absolute;
             bottom: 30px;
@@ -157,6 +163,7 @@
             box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
         }
 
+        /* === ОСНОВНАЯ ОБЛАСТЬ РЕДАКТИРОВАНИЯ === */
         .main-content {
             flex: 1;
             display: flex;
@@ -164,6 +171,7 @@
             overflow: hidden;
         }
 
+        /* === ЗАГОЛОВОК РЕДАКТОРА === */
         .editor-header {
             padding: 20px 30px;
             background: white;
@@ -229,6 +237,7 @@
             transform: translateY(-2px);
         }
 
+        /* === ПОЛЕ ВВОДА ЗАГОЛОВКА === */
         .title-input {
             width: 100%;
             padding: 15px 20px;
@@ -246,6 +255,7 @@
             border-bottom-color: #667eea;
         }
 
+        /* === TEXTAREA ДЛЯ ТЕКСТА === */
         .content-textarea {
             flex: 1;
             width: 100%;
@@ -263,6 +273,7 @@
             outline: none;
         }
 
+        /* === СОСТОЯНИЕ ПУСТОГО БЛОКНОТА === */
         .empty-state {
             flex: 1;
             display: flex;
@@ -290,11 +301,25 @@
             margin-bottom: 30px;
         }
 
+        /* === УВЕДОМЛЕНИЯ === */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            font-weight: 500;
+        }
+
         /* === АДАПТИВНЫЙ ДИЗАЙН === */
         @media (max-width: 768px) {
             .notebook-container {
                 flex-direction: column;
-                height: auto;
             }
 
             .sidebar {
@@ -319,6 +344,26 @@
                 margin-bottom: 5px;
             }
         }
+
+        /* === АНИМАЦИИ === */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .note-item {
+            animation: fadeIn 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -331,19 +376,15 @@
             
             <!-- Поисковая строка -->
             <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Поиск по записям...">
+                <input type="text" class="search-input" placeholder="Поиск по записям..." id="searchInput">
             </div>
             
             <!-- Список записей -->
             <div class="notes-list" id="notesList">
-                <div style="padding: 20px; text-align: center; color: #6666;" id="emptyNotes">
-                    Записей пока нет
-                </div>
-                <!-- Записи будут добавляться сюда динамически -->
             </div>
             
             <!-- Кнопка создания новой записи -->
-            <button class="add-note-btn" onclick="createNewNote()" title="Создать новую запись">+</button>
+            <button class="add-note-btn" id="addNoteBtn" title="Создать новую запись">+</button>
         </div>
         
         <!-- Основная область редактирования -->
@@ -354,182 +395,357 @@
                     <span id="editorTitle">Редактор записей</span>
                 </div>
                 <div class="editor-actions">
-                    <button class="action-btn new-btn" onclick="createNewNote()">📄 Новая</button>
-                    <button class="action-btn save-btn" onclick="saveCurrentNote()">💾 Сохранить</button>
-                    <button class="action-btn delete-btn" onclick="deleteCurrentNote()">🗑️ Удалить</button>
+                    <button class="action-btn new-btn" id="newNoteBtn">📄 Новая</button>
+                    <button class="action-btn save-btn" id="saveNoteBtn">💾 Сохранить</button>
+                    <button class="action-btn delete-btn" id="deleteNoteBtn">🗑️ Удалить</button>
                 </div>
             </div>
             
             <!-- Поле ввода заголовка -->
-            <input type="text" class="title-input" id="noteTitle" placeholder="Введите заголовок записи...">
+            <input type="text" class="title-input" id="titleInput" placeholder="Введите заголовок записи...">
             
             <!-- Поле для текста записи -->
-            <textarea class="content-textarea" id="noteContent" placeholder="Начните писать вашу запись..."></textarea>
+            <textarea class="content-textarea" id="contentTextarea" placeholder="Начните писать вашу запись..."></textarea>
             
             <!-- Состояние пустого блокнота -->
-            <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state" id="emptyState">
                 <div class="empty-state-icon">📖</div>
                 <h3>Ваш блокнот пуст</h3>
                 <p>Создайте первую запись, чтобы начать работу с блокнотом</p>
-                <button class="action-btn new-btn" onclick="createNewNote()">Создать запись</button>
+                <button class="action-btn new-btn" onclick="notebook.createNewNote()">Создать запись</button>
             </div>
         </div>
     </div>
 
     <script>
-        let notes = [];
-        let nextId = 1;
-        let currentNoteId = null;
-        
-        // Форматирование даты
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffTime = Math.abs(now.getTime() - date.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 24));
-            
-            if (diffDays === 1) {
-                return 'Сегодня';
-            } else if (diffDays === 2) {
-                return 'Вчера';
-            } else if (diffDays <= 7) {
-                return `${diffDays - 1} дн. назад`;
-            } else {
-                return date.toLocaleDateString('ru-RU', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        /**
+         * Класс для управления блокнотом записей
+         * Обеспечивает полную функциональность создания, редактирования, поиска и удаления записей
+         */
+        class Notebook {
+            constructor() {
+                this.notes = []; // Массив всех записей
+                this.currentNoteId = null; // ID текущей редактируемой записи
+                this.nextId = 1; // Счетчик для генерации уникальных ID
+                this.searchTimeout = null; // Таймер для поиска
+                this.autoSaveTimeout = null; // Таймер для автосохранения
+                this.init(); // Инициализация приложения
+            }
+
+            /**
+             * Инициализация блокнота
+             * Загружает данные и настраивает обработчики событий
+             */
+            init() {
+                this.loadNotes(); // Загружаем сохраненные записи
+                this.bindEvents(); // Настраиваем обработчики событий
+                this.updateDisplay(); // Обновляем интерфейс
+            }
+
+            /**
+             * Настройка обработчиков событий
+             */
+            bindEvents() {
+                // Кнопки управления
+                document.getElementById('addNoteBtn').addEventListener('click', () => this.createNewNote());
+                document.getElementById('newNoteBtn').addEventListener('click', () => this.createNewNote());
+                document.getElementById('saveNoteBtn').addEventListener('click', () => this.saveCurrentNote());
+                document.getElementById('deleteNoteBtn').addEventListener('click', () => this.deleteCurrentNote());
+
+                // Поиск
+                const searchInput = document.getElementById('searchInput');
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(this.searchTimeout);
+                    this.searchTimeout = setTimeout(() => {
+                        this.filterNotes(e.target.value);
+                    }, 300);
+                });
+
+                // Автосохранение при изменении заголовка или содержимого
+                document.getElementById('titleInput').addEventListener('input', () => this.autoSave());
+                document.getElementById('contentTextarea').addEventListener('input', () => this.autoSave());
+
+                // Сохранение при нажатии Ctrl+S
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key === 's') {
+                        e.preventDefault();
+                        this.saveCurrentNote();
+                    }
                 });
             }
-        }
-        
-        // Обновление списка заметок
-        function updateNotesList() {
-            const notesList = document.getElementById('notesList');
-            const emptyNotes = document.getElementById('emptyNotes');
-            const searchInput = document.getElementById('searchInput');
-            const searchTerm = searchInput.value.toLowerCase();
-            
-            // Фильтрация заметок
-            const filteredNotes = notes.filter(note => 
-                note.title.toLowerCase().includes(searchTerm) ||
-                note.content.toLowerCase().includes(searchTerm)
-            );
-            
-            if (filteredNotes.length > 0) {
-                emptyNotes.style.display = 'none';
-                notesList.innerHTML = '';
+
+            /**
+             * Создание новой записи
+             */
+            createNewNote() {
+                // Создаем новую запись
+                const newNote = {
+                    id: this.nextId++,
+                    title: 'Новая запись',
+                    content: '',
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+
+                this.notes.unshift(newNote); // Добавляем в начало массива
+                this.currentNoteId = newNote.id;
                 
-                filteredNotes.forEach(note => {
-                    const noteElement = document.createElement('div');
-                    noteElement.className = `note-item ${currentNoteId === note.id ? 'active' : ''}`;
-                    noteElement.onclick = () => loadNoteToEditor(note.id);
+                this.saveNotes(); // Сохраняем в localStorage
+                this.loadNoteToEditor(newNote.id); // Загружаем в редактор
+                
+                this.showNotification('Новая запись создана! ✨');
+                
+                // Фокусируемся на заголовке для немедленного редактирования
+                setTimeout(() => {
+                    document.getElementById('titleInput').focus();
+                    document.getElementById('titleInput').select();
+                }, 100);
+            }
+
+            /**
+             * Загрузка записи в редактор для просмотра/редактирования
+             */
+            loadNoteToEditor(noteId) {
+                const note = this.notes.find(note => note.id === noteId);
+                if (!note) return;
+
+                this.currentNoteId = noteId;
+                
+                // Загружаем данные в поля редактора
+                document.getElementById('titleInput').value = note.title;
+                document.getElementById('contentTextarea').value = note.content;
+                
+                // Показываем редактор, скрываем пустое состояние
+                document.getElementById('emptyState').style.display = 'none';
+                document.querySelector('.editor-header').style.display = 'flex';
+                document.querySelector('.title-input').style.display = 'block';
+                document.querySelector('.content-textarea').style.display = 'block';
+            }
+
+            /**
+             * Сохранение текущей записи
+             */
+            saveCurrentNote() {
+                if (!this.currentNoteId) {
+                    this.showNotification('Нет активной записи для сохранения!', 'warning');
+                    return;
+                }
+
+                const note = this.notes.find(note => note.id === this.currentNoteId);
+                if (!note) return;
+
+                const title = document.getElementById('titleInput').value.trim();
+                const content = document.getElementById('contentTextarea').value;
+
+                if (!title) {
+                    this.showNotification('Заголовок не может быть пустым!', 'warning');
+                    return;
+                }
+
+                // Обновляем данные записи
+                note.title = title;
+                note.content = content;
+                note.updatedAt = new Date().toISOString();
+
+                this.saveNotes(); // Сохраняем в localStorage
+                this.updateDisplay(); // Обновляем интерфейс
+                
+                this.showNotification('Запись сохранена! 💾');
+            }
+
+            /**
+             * Автоматическое сохранение при редактировании
+             */
+            autoSave() {
+                if (!this.currentNoteId) return;
+
+                clearTimeout(this.autoSaveTimeout);
+                this.autoSaveTimeout = setTimeout(() => {
+                    this.saveCurrentNote();
+                }, 2000); // Сохраняем через 2 секунды после последнего изменения
+            }
+
+            /**
+             * Удаление текущей записи
+             */
+            deleteCurrentNote() {
+                if (!this.currentNoteId) {
+                    this.showNotification('Нет активной записи для удаления!', 'warning');
+                    return;
+                }
+
+                const note = this.notes.find(note => note.id === this.currentNoteId);
+                if (!note) return;
+
+                // Подтверждение удаления
+                if (confirm(`Вы уверены, что хотите удалить запись "${note.title}"?`)) {
+                    this.notes = this.notes.filter(note => note.id !== this.currentNoteId);
+                    this.currentNoteId = null;
                     
-                    noteElement.innerHTML = `
-                        <div class="note-title">${note.title}</div>
-                        <div class="note-preview">${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}</div>
-                        <div class="note-date">${formatDate(note.updatedAt)}</div>
-                    `;
+                    this.saveNotes(); // Сохраняем изменения
+                    this.updateDisplay(); // Обновляем интерфейс
+                    this.showEditorEmptyState(); // Показываем пустое состояние
                     
-                    notesList.appendChild(noteElement);
-                });
-            } else {
-                notesList.innerHTML = '';
-                emptyNotes.style.display = 'block';
-                emptyNotes.textContent = searchTerm ? 'Ничего не найдено' : 'Записей пока нет';
-                notesList.appendChild(emptyNotes);
+                    this.showNotification('Запись удалена! 🗑️');
+                }
             }
-        }
-        
-        // Загрузка заметки в редактор
-        function loadNoteToEditor(id) {
-            const note = notes.find(note => note.id === id);
-            if (note) {
-                currentNoteId = id;
-                document.getElementById('noteTitle').value = note.title;
-                document.getElementById('noteContent').value = note.content;
-                document.getElementById('editorTitle').textContent = note.title;
-                updateNotesList();
-            }
-        }
-        
-        // Создание новой заметки
-        function createNewNote() {
-            const newNote = {
-                id: nextId++,
-                title: 'Новая запись',
-                content: '',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            
-            notes.unshift(newNote);
-            currentNoteId = newNote.id;
-            document.getElementById('noteTitle').value = newNote.title;
-            document.getElementById('noteContent').value = newNote.content;
-            document.getElementById('editorTitle').textContent = newNote.title;
-            
-            updateNotesList();
-            document.getElementById('noteTitle').focus();
-        }
-        
-        // Сохранение текущей заметки
-        function saveCurrentNote() {
-            if (currentNoteId === null) {
-                alert('Нет активной записи для сохранения!');
-                return;
-            }
-            
-            const title = document.getElementById('noteTitle').value.trim();
-            if (!title) {
-                alert('Заголовок не может быть пустым!');
-                return;
-            }
-            
-            const content = document.getElementById('noteContent').value;
-            
-            const noteIndex = notes.findIndex(note => note.id === currentNoteId);
-            if (noteIndex !== -1) {
-                notes[noteIndex].title = title;
-                notes[noteIndex].content = content;
-                notes[noteIndex].updatedAt = new Date().toISOString();
+
+            /**
+             * Поиск и фильтрация записей
+             */
+            filterNotes(searchTerm) {
+                const filteredNotes = this.notes.filter(note => 
+                    note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    note.content.toLowerCase().includes(searchTerm.toLowerCase())
+                );
                 
-                document.getElementById('editorTitle').textContent = title;
+                this.renderNotesList(filteredNotes);
             }
-            
-            updateNotesList();
-        }
-        
-        // Удаление текущей заметки
-        function deleteCurrentNote() {
-            if (currentNoteId === null) {
-                alert('Нет активной записи для удаления!');
-                return;
-            }
-            
-            const note = notes.find(note => note.id === currentNoteId);
-            if (note && confirm(`Вы уверены, что хотите удалить запись "${note.title}"?`)) {
-                notes = notes.filter(note => note.id !== currentNoteId);
-                currentNoteId = null;
-                document.getElementById('noteTitle').value = '';
-                document.getElementById('noteContent').value = '';
-                document.getElementById('editorTitle').textContent = 'Редактор записей';
+
+            /**
+             * Обновление отображения интерфейса
+             */
+            updateDisplay() {
+                this.renderNotesList(this.notes);
                 
-                // Показать пустое состояние, если нет заметок
+                if (this.currentNoteId) {
+                    this.loadNoteToEditor(this.currentNoteId);
+                } else {
+                    this.showEditorEmptyState();
+                }
+            }
+
+            /**
+             * Отображение списка записей
+             */
+            renderNotesList(notes = this.notes) {
+                const notesList = document.getElementById('notesList');
+                
                 if (notes.length === 0) {
-                    document.getElementById('emptyState').style.display = 'flex';
+                    notesList.innerHTML = `
+                        <div style="padding: 20px; text-align: center; color: #666;">
+                            ${document.getElementById('searchInput').value ? 'Ничего не найдено' : 'Записей пока нет'}
+                        </div>
+                    `;
+                    return;
+                }
+
+                notesList.innerHTML = notes.map(note => `
+                    <div class="note-item ${note.id === this.currentNoteId ? 'active' : ''}" 
+                         onclick="notebook.loadNoteToEditor(${note.id})">
+                        <div class="note-title">${this.escapeHtml(note.title)}</div>
+                        <div class="note-preview">${this.escapeHtml(note.content.substring(0, 100))}${note.content.length > 100 ? '...' : ''}</div>
+                        <div class="note-date">${this.formatDate(note.updatedAt)}</div>
+                    </div>
+                `).join('');
+            }
+
+            /**
+             * Показ пустого состояния редактора
+             */
+            showEditorEmptyState() {
+                document.getElementById('emptyState').style.display = 'flex';
+                document.querySelector('.editor-header').style.display = 'none';
+                document.querySelector('.title-input').style.display = 'none';
+                document.querySelector('.content-textarea').style.display = 'none';
+            }
+
+            /**
+             * Экранирование HTML для безопасности
+             */
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            /**
+             * Форматирование даты для отображения
+             */
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = Math.abs(now - date);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    return 'Сегодня';
+                } else if (diffDays === 2) {
+                    return 'Вчера';
+                } else if (diffDays <= 7) {
+                    return `${diffDays - 1} дн. назад`;
+                } else {
+                    return date.toLocaleDateString('ru-RU', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+                    });
+                }
+            }
+
+            /**
+             * Показ уведомления пользователю
+             */
+            showNotification(message, type = 'success') {
+                // Удаляем предыдущие уведомления
+                const existingNotifications = document.querySelectorAll('.notification');
+                existingNotifications.forEach(notif => notif.remove());
+
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                
+                // Цвет в зависимости от типа
+                if (type === 'warning') {
+                    notification.style.background = '#ffc107';
+                } else if (type === 'error') {
+                    notification.style.background = '#dc3545';
                 }
                 
-                updateNotesList();
+                document.body.appendChild(notification);
+                
+                // Удаляем уведомление через 3 секунды
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+
+            /**
+             * Сохранение записей в localStorage
+             */
+            saveNotes() {
+                localStorage.setItem('notebookNotes', JSON.stringify(this.notes));
+                localStorage.setItem('notebookNextId', this.nextId.toString());
+            }
+
+            /**
+             * Загрузка записей из localStorage
+             */
+            loadNotes() {
+                const savedNotes = localStorage.getItem('notebookNotes');
+                const savedNextId = localStorage.getItem('notebookNextId');
+                
+                if (savedNotes) {
+                    this.notes = JSON.parse(savedNotes);
+                }
+                if (savedNextId) {
+                    this.nextId = parseInt(savedNextId);
+                }
             }
         }
-        
-        // Поиск заметок
-        document.getElementById('searchInput').addEventListener('input', updateNotesList);
-        
-        // Инициализация
-        document.getElementById('emptyState').style.display = notes.length === 0 ? 'flex' : 'none';
-        updateNotesList();
+
+        // Инициализация блокнота при загрузке страницы
+        const notebook = new Notebook();
     </script>
+
+    <!-- Информация о приложении -->
+    <div style="position: fixed; bottom: 10px; right: 10px; font-size: 0.8em; color: rgba(255,255,0.6);">
+        Блокнот v2.0 - Приложение для заметок
+    </div>
 </body>
 </html>

@@ -50,8 +50,9 @@ const Notebook: React.FC = () => {
  }, [currentNoteId, notes]);
 
   const createNewNote = () => {
+    const newId = nextId;
     const newNote: Note = {
-      id: nextId,
+      id: newId,
       title: 'Новая запись',
       content: '',
       createdAt: new Date().toISOString(),
@@ -59,8 +60,10 @@ const Notebook: React.FC = () => {
     };
 
     setNotes([newNote, ...notes]);
-    setNextId(nextId + 1);
+    setNextId(newId + 1);
     setCurrentNoteId(newNote.id);
+    setTitle(newNote.title);
+    setContent(newNote.content);
   };
 
   const saveCurrentNote = () => {
@@ -97,6 +100,8 @@ const Notebook: React.FC = () => {
     if (note && confirm(`Вы уверены, что хотите удалить запись "${note.title}"?`)) {
       setNotes(notes.filter(note => note.id !== currentNoteId));
       setCurrentNoteId(null);
+      setTitle('');
+      setContent('');
     }
   };
 
@@ -187,7 +192,7 @@ const Notebook: React.FC = () => {
         {/* Заголовок редактора с действиями */}
         <div className="editor-header">
           <div className="editor-title">
-            <span id="editorTitle">Редактор записей</span>
+            <span id="editorTitle">{currentNoteId !== null ? title : 'Редактор записей'}</span>
           </div>
           <div className="editor-actions">
             <button className="action-btn new-btn" onClick={createNewNote}>
